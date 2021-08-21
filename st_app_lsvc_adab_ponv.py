@@ -19,7 +19,7 @@ adab = None
 def setup_selectors():
     global vars, uploader, btn_predict
 
-    if uploader is not None:
+    if uploader is not None and COL_INPUT is not None and len(COL_INPUT) > 0:
         col_num = 3
         cols = st.columns(col_num)
 
