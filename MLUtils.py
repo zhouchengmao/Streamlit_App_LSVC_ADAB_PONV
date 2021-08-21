@@ -30,7 +30,11 @@ from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_sco
     confusion_matrix, make_scorer
 from sklearn.metrics import mean_squared_error, zero_one_loss, log_loss
 
-COL_INPUT = None
+COL_INPUT = [
+    'haloperidol', 'sex', 'age', 'smoking', 'history PONV', 'combined Anesthesia', 'anesthesia Duration',
+    'sufentanil Bolus', 'sufentanil Epidural', 'sufentanil Infusion', 'sufentanil TCI', 'remifentanil Bolus',
+    'remifentanil Infusion', 'remifentanil TCI', 'piritramide'
+]  # None
 COL_STR = []  # ['risk']
 COL_Y = None
 
@@ -47,7 +51,7 @@ def read_csv(fp, encoding='gb18030'):
 
 def do_base_preprocessing(pocd, with_y=True):
     global COL_INPUT, COL_STR, COL_Y
-    COL_INPUT = list(pocd.columns[:-1])
+    # COL_INPUT = list(pocd.columns[:-1])
     COL_Y = [str(pocd.columns[-1])]
     print(COL_INPUT, COL_Y)  # TODO
 
