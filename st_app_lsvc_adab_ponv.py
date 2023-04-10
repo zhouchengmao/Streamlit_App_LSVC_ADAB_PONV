@@ -8,7 +8,6 @@ st.title('AI and PONV')  # 算法名称 and XXX
 
 vars = []
 
-uploader = None
 btn_predict = None
 
 lsvc = None
@@ -17,9 +16,9 @@ adab = None
 
 # 配置选择变量（添加生成新数据并预测的功能）
 def setup_selectors():
-    global vars, uploader, btn_predict
+    global vars, btn_predict
 
-    if uploader is not None and COL_INPUT is not None and len(COL_INPUT) > 0:
+    if COL_INPUT is not None and len(COL_INPUT) > 0:
         col_num = 3
         cols = st.columns(col_num)
 
@@ -35,29 +34,10 @@ def setup_selectors():
         do_predict()
 
 
-# 配置上传条
-def setup_uploader():
-    global uploader
-    uploader = st.file_uploader('Upload data file here', type=['csv', 'txt'], help='Upload dataset for training',
-                                key="uploader")
-
-    if uploader is not None:
-        if st.checkbox('Show uploaded file information', value=True, key="cb_file_info"):
-            # 显示文件详细信息
-            file_details = {
-                "FileName": uploader.name, "FileType": uploader.type, "FileSize": uploader.size
-            }
-            st.write(file_details)
-
-        do_processing()
-        setup_selectors()
-
-
 # 对上传的文件进行处理和展示
 def do_processing():
-    global uploader
     global lsvc, adab
-    pocd = read_csv(uploader)
+    pocd = read_csv('./pocd.csv')
 
     st.text("Dataset Description")
     st.write(pocd.describe())
@@ -137,4 +117,5 @@ def do_predict():
 
 
 if __name__ == "__main__":
-    setup_uploader()
+    do_processing()
+    setup_selectors()

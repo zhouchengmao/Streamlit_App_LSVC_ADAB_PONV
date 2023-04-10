@@ -34,43 +34,53 @@ COL_INPUT = [
     'haloperidol', 'sex', 'age', 'smoking', 'history PONV', 'combined Anesthesia', 'anesthesia Duration',
     'sufentanil Bolus', 'sufentanil Epidural', 'sufentanil Infusion', 'sufentanil TCI', 'remifentanil Bolus',
     'remifentanil Infusion', 'remifentanil TCI', 'piritramide'
-]  # None
-COL_STR = []  # ['risk']
+]
+# COL_STR = []  # ['risk']
 COL_Y = None
 
 enc = OneHotEncoder()
 ss = MinMaxScaler()
 
 
-def read_csv(fp, encoding='gb18030'):
+def read_csv(fp, encoding='gb18030', y_num=1, col_input=None, col_str=None):
     pocd = pd.read_csv(fp, encoding=encoding)
-    pocd = do_base_preprocessing(pocd)  # 覆盖掉原来的pocd
+    pocd = do_base_preprocessing(pocd, y_num=y_num, col_input=col_input, col_str=col_str)  # 覆盖掉原来的pocd
 
     return pocd
 
 
-def do_base_preprocessing(pocd, with_y=True):
-    global COL_INPUT, COL_STR, COL_Y
-    # COL_INPUT = list(pocd.columns[:-1])
-    COL_Y = [str(pocd.columns[-1])]
-    print(COL_INPUT, COL_Y)  # TODO
+def do_base_preprocessing(pocd, with_y=True, y_num=1, col_input=None, col_str=None):
+    global COL_INPUT, COL_Y
+    if col_input is None:
+        col_input = COL_INPUT
+    if col_str is None:
+        col_str = []
+    COL_Y = [str(i) for i in pocd.columns[-y_num:]]
+    # print("col_input", col_input, "COL_Y", COL_Y)  # TODO
 
     new_pocd = pocd
-    if len(COL_STR) > 0:
+    if len(col_str) > 0:
         if with_y:
-            enc.fit(pocd[COL_STR])
-        t = enc.transform(pocd[COL_STR]).toarray()
-        new_pocd = pocd.drop(COL_STR, axis=1).join(pd.DataFrame(t, columns=enc.get_feature_names(COL_STR)))
-        if with_y:
-            y = pocd[COL_Y]
-            new_pocd = new_pocd.drop(COL_Y, axis=1).join(y)
-    columns = new_pocd.columns
+            enc.fit(pocd[col_str])
+        t = enc.transform(pocd[col_str]).toarray()
+        new_pocd = pocd.drop(col_str, axis=1).join(pd.DataFrame(t, columns=enc.get_feature_names(col_str)))
 
+    y = None
+    if with_y:
+        y = pocd[COL_Y]
+        new_pocd = new_pocd.drop(COL_Y, axis=1)
+    columns = new_pocd.columns
     # imp = Imputer(missing_values='NaN', strategy='mean', axis=0)  # sklearn < 0.20：配置缺失数据处理模型
     imp = SimpleImputer(missing_values=np.NaN, strategy='mean')  # sklearn >= 0.20：改用SimpleImputer
     new_pocd = imp.fit_transform(new_pocd)  # 对数据进行“训练”（处理），得到转换后的数据
     new_pocd = pd.DataFrame(new_pocd)  # 转换为pd的DataFrame
     new_pocd.columns = columns  # 恢复表头
+    if with_y:
+        new_pocd_list = []
+        for sy in COL_Y:
+            p = new_pocd.join(y[[sy]])
+            new_pocd_list.append(p)
+        return new_pocd_list if len(new_pocd_list) > 1 else new_pocd_list[0]
 
     return new_pocd
 
